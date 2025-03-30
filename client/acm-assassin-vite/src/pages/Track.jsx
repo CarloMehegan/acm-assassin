@@ -4,80 +4,81 @@ import axios from 'axios';
 
 export default function Track() {
   const { linkId } = useParams();
-  const [pin, setPin] = useState('');
+  const [name, setName] = useState('');
+  const [note, setNote] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState('');
-  const [countdown, setCountdown] = useState(10);
+  const [entryTime] = useState(Date.now());
 
-  //once page is loaded, send a log to the server
+  // Log page open
   useEffect(() => {
-    // Log that the page was opened
     axios.post(`http://localhost:3000/track/${linkId}/open`, {
       userAgent: navigator.userAgent
     }).catch(() => {
       console.warn("Failed to log open event");
     });
-  }, []);
-  
-  // Start countdown
+  }, [linkId]);
+
+  // Track duration on exit
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) {
-          clearInterval(timer);
-          if (!submitted) {
-            axios.post(`http://localhost:3000/track/${linkId}/timeout`)
-              .then(() => setMessage("⏱️ Time ran out — visit logged."))
-              .catch(() => setMessage("Failed to log timeout."));
-            setSubmitted(true);
-          }
-          return 0;
-        }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [submitted]);
-  
+    const handleUnload = () => {
+      const timeSpent = Math.floor((Date.now() - entryTime) / 1000);
+      navigator.sendBeacon(
+        `http://localhost:3000/track/${linkId}/duration`,
+        JSON.stringify({ timeSpent, userAgent: navigator.userAgent })
+      );
+    };
 
-  const submitPin = () => {
-    axios.post(`http://localhost:3000/track/${linkId}/submit-pin`, { pin })
-      .then(res => setMessage(res.data.message))
-      .catch(() => setMessage("Incorrect or no match"));
-    setSubmitted(true);
+    window.addEventListener("beforeunload", handleUnload);
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") handleUnload();
+    });
+
+    return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+    };
+  }, [entryTime, linkId]);
+
+  const submitResponse = () => {
+    axios.post(`http://localhost:3000/track/${linkId}/respond`, {
+      name,
+      note
+    }).then(res => {
+      setMessage(res.data.message);
+      setSubmitted(true);
+    }).catch(() => {
+      setMessage("Something went wrong submitting your response.");
+      setSubmitted(true);
+    });
   };
 
-  const admit = () => {
-    axios.post(`http://localhost:3000/track/${linkId}/admit`)
-      .then(res => setMessage("You admitted being phished. 😔"))
-      .catch(() => setMessage("Something went wrong."));
-    setSubmitted(true);
-  };
-
-return (
+  return (
     <div style={{ padding: '2rem', maxWidth: '400px', margin: 'auto' }}>
-        <h1>🎣ACM Assassins</h1>
-        <p>The link you just opened is part of <a href="https://acm.cs.wm.edu" target="_blank" rel="noopener noreferrer">W&M ACM</a>'s Assassins game.
-            Players are given a target and must find a way to make them click on a link.
-        </p>
-        <p>If this link fooled you, leave your name and a message to the assassin here:</p>
-        <p>Countdown: {countdown}s</p>
+      <h1>🎣 ACM Assassins</h1>
+      <p>
+        This link is part of <a href="https://acm.cs.wm.edu" target="_blank" rel="noopener noreferrer">W&M ACM</a>'s Assassins game.
+        If this tricked you, leave your name and a message to the assassin.
+      </p>
 
-        {!submitted && (
-            <>
-                <input
-                    placeholder="Enter defusal PIN"
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value)}
-                    style={{ width: '100%', marginBottom: '1rem' }}
-                />
-                <button onClick={submitPin}>Disarm</button>
-                <p style={{ margin: '1rem 0' }}>OR</p>
-                <button onClick={admit}>You Got Me!</button>
-            </>
-        )}
+      {!submitted && (
+        <>
+          <input
+            placeholder="Your name (or defusal code)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ width: '100%', marginBottom: '0.5rem' }}
+          />
+          <textarea
+            placeholder="Optional message to your assassin..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            style={{ width: '100%', marginBottom: '1rem', height: '80px' }}
+          />
+          <button onClick={submitResponse}>Submit</button>
+        </>
+      )}
 
-        {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
+      {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
     </div>
-);
+  );
 }

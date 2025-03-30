@@ -149,3 +149,58 @@ app.post("/track/:linkId/open", (req, res) => {
   user.logs.push(click);
   res.json({ message: "Open event logged." });
 });
+
+app.post("/track/:linkId/respond", (req, res) => {
+  const { linkId } = req.params;
+  const { name, note } = req.body;
+
+  const user = Object.values(users).find(u => u.linkId === linkId);
+  if (!user) return res.status(404).json({ error: "Invalid link" });
+
+  const isDefusal = name === user.pin;
+
+  const log = {
+    time: new Date().toISOString(),
+    defused: isDefusal,
+    admitted: !isDefusal,
+    name,
+    note,
+  };
+
+  user.logs.push(log);
+
+  if (isDefusal) {
+    res.json({ message: "✅ Link successfully tested (disarmed with defusal code)." });
+  } else {
+    res.json({ message: "🙈 Thanks for participating in this phishing awareness game. Message logged!" });
+  }
+});
+
+
+app.post("/track/:linkId/duration", express.text(), (req, res) => {
+  const { linkId } = req.params;
+
+  const user = Object.values(users).find(u => u.linkId === linkId);
+  if (!user) return res.status(404).end();
+
+  let data;
+  try {
+    data = JSON.parse(req.body);
+  } catch (e) {
+    return res.status(400).end();
+  }
+
+  const { timeSpent, userAgent } = data;
+
+  user.logs.push({
+    time: new Date().toISOString(),
+    duration: timeSpent,
+    userAgent,
+    defused: false,
+    admitted: false,
+    timedOut: false,
+    opened: false,
+  });
+
+  res.status(200).end();
+});

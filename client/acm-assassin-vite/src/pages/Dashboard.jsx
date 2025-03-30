@@ -14,7 +14,6 @@ export default function Dashboard() {
       return;
     }
 
-    // Get user info from localStorage
     const userInfo = {
       username: localStorage.getItem("username"),
       targetName: localStorage.getItem("targetName"),
@@ -25,7 +24,6 @@ export default function Dashboard() {
 
     setData(userInfo);
 
-    // Fetch logs
     axios.get(`http://localhost:3000/logs/${playerId}`)
       .then(res => setLogs(res.data.logs))
       .catch(() => setLogs([]));
@@ -37,106 +35,107 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '600px', margin: 'auto' }}>
-        <h1>Welcome, {data.username}</h1>
-        <p><strong>Your Target:</strong> {data.targetName}</p>
-        <p>
-            <strong>Your Phishing Link:</strong>{' '}
-            <a href={link} target="_blank" rel="noreferrer">{link}</a>
-        </p>
-        <p><strong>Your Link's Defusal Code:</strong> {data.pin}</p>
+      <h1>Welcome, {data.username}</h1>
+      <p><strong>Your Target:</strong> {data.targetName}</p>
+      <p>
+        <strong>Your Phishing Link:</strong>{' '}
+        <a href={link} target="_blank" rel="noreferrer">{link}</a>
+      </p>
+      <p><strong>Your Link's Defusal Code:</strong> {data.pin}</p>
 
-        <button
-            onClick={() => {
-                const text = logs.map((log) => {
-                const timestamp = new Date(log.time);
-                const formattedTime = timestamp.toLocaleString('en-US', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                });
+      <button
+        onClick={() => {
+          const text = logs.map((log) => {
+            const timestamp = new Date(log.time);
+            const formattedTime = timestamp.toLocaleString('en-US', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            });
 
-                let message = '';
-                if (log.admitted) {
-                    message = "🙈 Target clicked 'You got me!'";
-                } else if (log.defused) {
-                    message = "✅ Link disarmed with correct PIN";
-                } else if (log.timedOut) {
-                    message = "⏱️ Timer expired — no interaction";
-                } else if (log.opened) {
-                    message = `👀 Link opened in ${log.userAgent || "unknown browser"}`;
-                } else {
-                    message = "❓ Uncategorized activity";
-                }
+            let message = '';
+            if (log.admitted) {
+              message = `🙈 ${log.name} admitted being phished: "${log.note || 'No message'}"`;
+            } else if (log.defused) {
+              message = "✅ Link disarmed with correct PIN";
+            } else if (log.timedOut) {
+              message = "💥 Timer expired — no interaction";
+            } else if (log.opened) {
+              message = `🎯 Link opened in ${log.userAgent || "unknown browser"}`;
+            } else {
+              message = "❓ Uncategorized activity";
+            }
 
-                return `[${formattedTime}] ${message}`;
-                }).join("\n");
+            if (log.duration) {
+              message += ` 🕒 Stayed for ${log.duration} sec`;
+            }
 
-                navigator.clipboard.writeText(text)
-                .then(() => alert("📋 Logs copied to clipboard!"))
-                .catch(() => alert("Failed to copy logs 😢"));
-            }}
-            style={{
-                marginBottom: '1rem',
-                padding: '0.5rem 1rem',
-                fontSize: '1rem'
-            }}
-            >
-            📋 Copy Logs
-        </button>
+            return `[${formattedTime}] ${message}`;
+          }).join("\n");
 
-        <h2>Activity Log</h2>
-        {logs.length === 0 ? (
-            <p>No clicks yet.</p>
-        ) : (
-            <ul>
-            {logs.map((log, i) => {
-                const timestamp = new Date(log.time);
-                const now = new Date();
-                const minutesAgo = Math.floor((now - timestamp) / 60000);
-                const secondsAgo = Math.floor((now - timestamp) / 1000);
-                const timeAgo =
-                    secondsAgo < 60
-                        ? `${secondsAgo} sec ago`
-                        : `${Math.floor(secondsAgo / 60)} min ${secondsAgo % 60} sec ago`;
+          navigator.clipboard.writeText(text)
+            .then(() => alert("📋 Logs copied to clipboard!"))
+            .catch(() => alert("Failed to copy logs 😢"));
+        }}
+        style={{
+          marginBottom: '1rem',
+          padding: '0.5rem 1rem',
+          fontSize: '1rem'
+        }}
+      >
+        📋 Copy Logs
+      </button>
 
+      <h2>Activity Log</h2>
+      {logs.length === 0 ? (
+        <p>No clicks yet.</p>
+      ) : (
+        <ul>
+          {logs.map((log, i) => {
+            const timestamp = new Date(log.time);
+            const now = new Date();
+            const secondsAgo = Math.floor((now - timestamp) / 1000);
+            const timeAgo =
+              secondsAgo < 60
+                ? `${secondsAgo} sec ago`
+                : `${Math.floor(secondsAgo / 60)} min ${secondsAgo % 60} sec ago`;
 
-                const formattedTime = timestamp.toLocaleString('en-US', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                });
+            const formattedTime = timestamp.toLocaleString('en-US', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            });
 
-                let message = '';
-                let emoji = '';
+            let message = '';
+            let emoji = '';
 
-                if (log.admitted) {
-                    message = "Target clicked 'You got me!'";
-                    emoji = "🙈";
-                } else if (log.defused) {
-                    message = "Link disarmed with correct PIN";
-                    emoji = "✅";
-                } else if (log.timedOut) {
-                    message = "Timer expired — no interaction";
-                    emoji = "💥";
-                } else if (log.opened) {
-                    message = `Link opened in ${log.userAgent || "unknown browser"}`;
-                    emoji = "🎯";
-                } else {
-                    message = "Uncategorized activity";
-                    emoji = "❓";
-                }
+            if (log.admitted) {
+              message = `${log.name} admitted being phished: "${log.note || 'No message'}"`;
+              emoji = "🙈";
+            } else if (log.defused) {
+              message = "Link disarmed with correct PIN";
+              emoji = "✅";
+            } else if (log.timedOut) {
+              message = "Timer expired — no interaction";
+              emoji = "💥";
+            } else if (log.opened) {
+              message = `Link opened in ${log.userAgent || "unknown browser"}`;
+              emoji = "🎯";
+            } else {
+              message = "Uncategorized activity";
+              emoji = "❓";
+            }
 
-                return (
-                    <li key={i}>
-                    [{formattedTime}] ({timeAgo}) {emoji} {message}
-                    </li>
-                );
-                })}
+            if (log.duration) {
+              message += ` 🕒 Stayed for ${log.duration} sec`;
+            }
 
-            </ul>
-        )}
-
-        </div>
-
-        
-
+            return (
+              <li key={i}>
+                [{formattedTime}] ({timeAgo}) {emoji} {message}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
