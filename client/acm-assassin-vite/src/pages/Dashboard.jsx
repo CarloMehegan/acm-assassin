@@ -54,6 +54,12 @@ export default function Dashboard() {
                 const timestamp = new Date(log.time);
                 const now = new Date();
                 const minutesAgo = Math.floor((now - timestamp) / 60000);
+                const secondsAgo = Math.floor((now - timestamp) / 1000);
+                const timeAgo =
+                    secondsAgo < 60
+                        ? `${secondsAgo} sec ago`
+                        : `${Math.floor(secondsAgo / 60)} min ${secondsAgo % 60} sec ago`;
+
 
                 const formattedTime = timestamp.toLocaleString('en-US', {
                     dateStyle: 'medium',
@@ -82,7 +88,7 @@ export default function Dashboard() {
 
                 return (
                     <li key={i}>
-                    [{formattedTime}] ({minutesAgo} min ago) {emoji} {message}
+                    [{formattedTime}] ({timeAgo}) {emoji} {message}
                     </li>
                 );
                 })}
