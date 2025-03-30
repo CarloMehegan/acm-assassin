@@ -54,26 +54,30 @@ export default function Track() {
     setSubmitted(true);
   };
 
-  return (
+return (
     <div style={{ padding: '2rem', maxWidth: '400px', margin: 'auto' }}>
-      <h1>🚨 Suspicious Link Clicked</h1>
-      <p>Countdown: {countdown}s</p>
+        <h1>🎣ACM Assassins</h1>
+        <p>The link you just opened is part of <a href="https://acm.cs.wm.edu" target="_blank" rel="noopener noreferrer">W&M ACM</a>'s Assassins game.
+            Players are given a target and must find a way to make them click on a link.
+        </p>
+        <p>If this link fooled you, leave your name and a message to the assassin here:</p>
+        <p>Countdown: {countdown}s</p>
 
-      {!submitted && (
-        <>
-          <input
-            placeholder="Enter defusal PIN"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            style={{ width: '100%', marginBottom: '1rem' }}
-          />
-          <button onClick={submitPin}>Disarm</button>
-          <p style={{ margin: '1rem 0' }}>OR</p>
-          <button onClick={admit}>You Got Me!</button>
-        </>
-      )}
+        {!submitted && (
+            <>
+                <input
+                    placeholder="Enter defusal PIN"
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value)}
+                    style={{ width: '100%', marginBottom: '1rem' }}
+                />
+                <button onClick={submitPin}>Disarm</button>
+                <p style={{ margin: '1rem 0' }}>OR</p>
+                <button onClick={admit}>You Got Me!</button>
+            </>
+        )}
 
-      {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
+        {message && <p style={{ marginTop: '1rem' }}>{message}</p>}
     </div>
-  );
+);
 }

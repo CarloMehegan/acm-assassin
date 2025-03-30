@@ -45,6 +45,44 @@ export default function Dashboard() {
         </p>
         <p><strong>Your Link's Defusal Code:</strong> {data.pin}</p>
 
+        <button
+            onClick={() => {
+                const text = logs.map((log) => {
+                const timestamp = new Date(log.time);
+                const formattedTime = timestamp.toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                });
+
+                let message = '';
+                if (log.admitted) {
+                    message = "🙈 Target clicked 'You got me!'";
+                } else if (log.defused) {
+                    message = "✅ Link disarmed with correct PIN";
+                } else if (log.timedOut) {
+                    message = "⏱️ Timer expired — no interaction";
+                } else if (log.opened) {
+                    message = `👀 Link opened in ${log.userAgent || "unknown browser"}`;
+                } else {
+                    message = "❓ Uncategorized activity";
+                }
+
+                return `[${formattedTime}] ${message}`;
+                }).join("\n");
+
+                navigator.clipboard.writeText(text)
+                .then(() => alert("📋 Logs copied to clipboard!"))
+                .catch(() => alert("Failed to copy logs 😢"));
+            }}
+            style={{
+                marginBottom: '1rem',
+                padding: '0.5rem 1rem',
+                fontSize: '1rem'
+            }}
+            >
+            📋 Copy Logs
+        </button>
+
         <h2>Activity Log</h2>
         {logs.length === 0 ? (
             <p>No clicks yet.</p>
@@ -77,10 +115,10 @@ export default function Dashboard() {
                     emoji = "✅";
                 } else if (log.timedOut) {
                     message = "Timer expired — no interaction";
-                    emoji = "⏱️";
+                    emoji = "💥";
                 } else if (log.opened) {
                     message = `Link opened in ${log.userAgent || "unknown browser"}`;
-                    emoji = "👀";
+                    emoji = "🎯";
                 } else {
                     message = "Uncategorized activity";
                     emoji = "❓";
@@ -95,7 +133,10 @@ export default function Dashboard() {
 
             </ul>
         )}
+
         </div>
+
+        
 
   );
 }
