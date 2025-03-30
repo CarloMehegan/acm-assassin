@@ -37,24 +37,59 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '600px', margin: 'auto' }}>
-      <h1>Welcome, {data.username}</h1>
-      <p><strong>Your Target:</strong> {data.targetName}</p>
-      <p><strong>Your Phishing Link:</strong> <a href={link} target="_blank" rel="noreferrer">{link}</a></p>
-      <p><strong>Your Link's Defusal Code:</strong> {data.pin}</p>
+        <h1>Welcome, {data.username}</h1>
+        <p><strong>Your Target:</strong> {data.targetName}</p>
+        <p>
+            <strong>Your Phishing Link:</strong>{' '}
+            <a href={link} target="_blank" rel="noreferrer">{link}</a>
+        </p>
+        <p><strong>Your Link's Defusal Code:</strong> {data.pin}</p>
 
-      <h2>Activity Log</h2>
-      {logs.length === 0 ? (
-        <p>No clicks yet.</p>
-      ) : (
-        <ul>
-          {logs.map((log, i) => (
-            <li key={i}>
-              [{log.time}] {log.defused ? "Disarmed" : "No PIN entered"}
-              {log.admitted && " — Target clicked 'You got me!'"}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+        <h2>Activity Log</h2>
+        {logs.length === 0 ? (
+            <p>No clicks yet.</p>
+        ) : (
+            <ul>
+            {logs.map((log, i) => {
+                const timestamp = new Date(log.time);
+                const now = new Date();
+                const minutesAgo = Math.floor((now - timestamp) / 60000);
+
+                const formattedTime = timestamp.toLocaleString('en-US', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                });
+
+                let message = '';
+                let emoji = '';
+
+                if (log.admitted) {
+                    message = "Target clicked 'You got me!'";
+                    emoji = "🙈";
+                } else if (log.defused) {
+                    message = "Link disarmed with correct PIN";
+                    emoji = "✅";
+                } else if (log.timedOut) {
+                    message = "Timer expired — no interaction";
+                    emoji = "⏱️";
+                } else if (log.opened) {
+                    message = `Link opened in ${log.userAgent || "unknown browser"}`;
+                    emoji = "👀";
+                } else {
+                    message = "Uncategorized activity";
+                    emoji = "❓";
+                }
+
+                return (
+                    <li key={i}>
+                    [{formattedTime}] ({minutesAgo} min ago) {emoji} {message}
+                    </li>
+                );
+                })}
+
+            </ul>
+        )}
+        </div>
+
   );
 }

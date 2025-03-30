@@ -68,3 +68,84 @@ app.get("/logs/:playerId", (req, res) => {
 
   res.json({ logs: user.logs });
 });
+
+
+//log: disarmed using PIN
+app.post("/track/:linkId/submit-pin", (req, res) => {
+  const { linkId } = req.params;
+  const { pin } = req.body;
+
+  const user = Object.values(users).find(u => u.linkId === linkId);
+  if (!user) return res.status(404).json({ error: "Invalid link" });
+
+  const click = {
+    time: new Date().toISOString(),
+    defused: user.pin === pin,
+    admitted: false,
+  };
+
+  user.logs.push(click);
+
+  if (click.defused) {
+    res.json({ message: "Link disarmed successfully." });
+  } else {
+    res.json({ message: "Wrong PIN. Possibly a hit!" });
+  }
+});
+
+//log: admitted to being phished
+app.post("/track/:linkId/admit", (req, res) => {
+  const { linkId } = req.params;
+
+  const user = Object.values(users).find(u => u.linkId === linkId);
+  if (!user) return res.status(404).json({ error: "Invalid link" });
+
+  const click = {
+    time: new Date().toISOString(),
+    defused: false,
+    admitted: true,
+  };
+
+  user.logs.push(click);
+
+  res.json({ message: "Admitted." });
+});
+
+//log: timed out without defusing
+app.post("/track/:linkId/timeout", (req, res) => {
+  const { linkId } = req.params;
+
+  const user = Object.values(users).find(u => u.linkId === linkId);
+  if (!user) return res.status(404).json({ error: "Invalid link" });
+
+  const click = {
+    time: new Date().toISOString(),
+    defused: false,
+    admitted: false,
+    timedOut: true,
+  };
+
+  user.logs.push(click);
+  res.json({ message: "Timeout logged." });
+});
+
+//log: link opened
+app.post("/track/:linkId/open", (req, res) => {
+  const { linkId } = req.params;
+  const { userAgent } = req.body;
+
+  const user = Object.values(users).find(u => u.linkId === linkId);
+  if (!user) return res.status(404).json({ error: "Invalid link" });
+
+  const click = {
+    time: new Date().toISOString(),
+    defused: false,
+    admitted: false,
+    timedOut: false,
+    opened: true,
+    userAgent: userAgent || "Unknown",
+  };
+
+  user.logs.push(click);
+  res.json({ message: "Open event logged." });
+});
