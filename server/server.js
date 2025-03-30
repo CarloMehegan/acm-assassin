@@ -204,3 +204,30 @@ app.post("/track/:linkId/duration", express.text(), (req, res) => {
 
   res.status(200).end();
 });
+
+
+
+//for the stats page
+app.get("/stats", (req, res) => {
+  const stats = Object.entries(users).map(([username, user]) => {
+    const admittedHits = user.logs.filter(log => log.admitted).length;
+    const messageCount = user.logs.filter(log => log.note && log.admitted).length;
+    const totalOpens = user.logs.filter(log => log.opened || log.admitted || log.defused || log.timedOut || log.duration).length;
+
+    const totalTime = user.logs.reduce((sum, log) => sum + (log.duration || 0), 0);
+
+    const eliminated = user.logs.some(log => log.admitted);
+    const status = eliminated ? "Eliminated" : "Active";
+
+    return {
+      username,
+      status,
+      admittedHits,
+      messageCount,
+      totalOpens,
+      totalTimeSpent: totalTime // in seconds
+    };
+  });
+
+  res.json(stats);
+});

@@ -37,6 +37,8 @@ export default function Dashboard() {
   return (
     <div style={{ padding: '2rem', maxWidth: '600px', margin: 'auto' }}>
       <h1>Welcome, {data.username}</h1>
+      <p><a href="/stats">View Player Stats</a></p>
+
       
       {showSensitive ? (
         <>
