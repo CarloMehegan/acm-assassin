@@ -216,7 +216,8 @@ app.get("/stats", (req, res) => {
 
     const totalTime = user.logs.reduce((sum, log) => sum + (log.duration || 0), 0);
 
-    const eliminated = user.logs.some(log => log.admitted);
+    // const eliminated = user.logs.some(log => log.admitted);
+    const eliminated = false
     const status = eliminated ? "Eliminated" : "Active";
 
     return {

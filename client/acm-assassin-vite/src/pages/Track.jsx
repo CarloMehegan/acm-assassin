@@ -58,13 +58,14 @@ export default function Track() {
       <p>
         This link is part of <a href="https://acm.cs.wm.edu" target="_blank" rel="noopener noreferrer">W&M ACM</a>'s Assassins game.
         Unfortunately, the link you clicked on was a decoy left by someone trying to get their target to this page.
-        If you were tricked and would like to leave a message to the assassin, you can do so below.
       </p>
 
       {!submitted && (
         <>
+          <button onClick={submitResponse}>I've been tricked!</button>
+          <p>Press this button to let the assassin know they got you. Optionally, leave a message to them below.</p>
           <input
-            placeholder="Your name (or defusal code)"
+            placeholder="Optional name/nickname"
             value={name}
             onChange={(e) => setName(e.target.value)}
             style={{ width: '100%', marginBottom: '0.5rem' }}
@@ -75,7 +76,7 @@ export default function Track() {
             onChange={(e) => setNote(e.target.value)}
             style={{ width: '100%', marginBottom: '1rem', height: '80px' }}
           />
-          <button onClick={submitResponse}>Submit</button>
+          
         </>
       )}
 
