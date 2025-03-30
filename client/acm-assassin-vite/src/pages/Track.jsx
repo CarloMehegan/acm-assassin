@@ -57,7 +57,8 @@ export default function Track() {
       <h1>🎣 ACM Assassins</h1>
       <p>
         This link is part of <a href="https://acm.cs.wm.edu" target="_blank" rel="noopener noreferrer">W&M ACM</a>'s Assassins game.
-        If this tricked you, leave your name and a message to the assassin.
+        Unfortunately, the link you clicked on was a decoy left by someone trying to get their target to this page.
+        If you were tricked and would like to leave a message to the assassin, you can do so below.
       </p>
 
       {!submitted && (

@@ -26,7 +26,7 @@ export default function Login() {
 
   return (
     <div>
-      <h1>Login</h1>
+      <h1>🎣 ACM Assassins Login</h1>
       <form onSubmit={handleLogin}>
         <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
         <input value={password} type="password" onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
