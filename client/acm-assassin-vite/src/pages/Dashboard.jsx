@@ -6,6 +6,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [showSensitive, setShowSensitive] = useState(false);
 
   useEffect(() => {
     const playerId = localStorage.getItem("playerId");
@@ -36,13 +37,26 @@ export default function Dashboard() {
   return (
     <div style={{ padding: '2rem', maxWidth: '600px', margin: 'auto' }}>
       <h1>Welcome, {data.username}</h1>
-      <p><strong>Your Target:</strong> {data.targetName}</p>
-      <p>
-        <strong>Your Phishing Link:</strong>{' '}
-        <a href={link} target="_blank" rel="noreferrer">{link}</a>
-      </p>
-      <p><strong>Your Link's Defusal Code:</strong> {data.pin}</p>
+      
+      {showSensitive ? (
+        <>
+          <p><strong>Your Target:</strong> {data.targetName}</p>
+          <p>
+            <strong>Your Phishing Link:</strong>{' '}
+            <a href={link} target="_blank" rel="noreferrer">{link}</a>
+          </p>
+          <p><strong>Your Link's Defusal Code:</strong> {data.pin}</p>
+        </>
+      ) : (
+        <>
+          <p><strong>Your Target:</strong> <em>[hidden]</em></p>
+          <p><strong>Your Phishing Link:</strong> <em>[hidden]</em></p>
+          <p><strong>Your Link's Defusal Code:</strong> <em>[hidden]</em></p>
+        </>
+      )}
 
+
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
       <button
         onClick={() => {
           const text = logs.map((log) => {
@@ -76,14 +90,29 @@ export default function Dashboard() {
             .then(() => alert("📋 Logs copied to clipboard!"))
             .catch(() => alert("Failed to copy logs 😢"));
         }}
-        style={{
-          marginBottom: '1rem',
-          padding: '0.5rem 1rem',
-          fontSize: '1rem'
-        }}
+        style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }}
       >
         📋 Copy Logs
       </button>
+
+      <button
+        onClick={() => setShowSensitive((prev) => !prev)}
+        style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+      >
+        {showSensitive ? "🙈 Hide Sensitive Info" : "👁️ Show Sensitive Info"}
+      </button>
+
+      <button
+        onClick={() => {
+          axios.get(`http://localhost:3000/logs/${data.playerId}`)
+            .then(res => setLogs(res.data.logs))
+            .catch(() => alert("Failed to refresh logs"));
+        }}
+        style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }}
+      >
+        🔄 Refresh Logs
+      </button>
+    </div>
 
       <h2>Activity Log</h2>
       {logs.length === 0 ? (
