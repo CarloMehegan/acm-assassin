@@ -11,7 +11,13 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:3000/login', { username, password });
-      localStorage.setItem('token', res.data.token);
+      // localStorage.setItem('token', res.data.token);
+      localStorage.setItem("username", res.data.username);
+      localStorage.setItem("playerId", res.data.playerId);
+      localStorage.setItem("targetName", res.data.targetName);
+      localStorage.setItem("linkId", res.data.linkId);
+      localStorage.setItem("pin", res.data.pin);
+
       navigate('/dashboard');
     } catch (err) {
       alert('Login failed');
